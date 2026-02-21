@@ -1,5 +1,5 @@
-# 1.1.0 (2026-02-14)
+# 1.2.0 (2026-02-21)
 
 ### Features
 
-* **lab01:** finish lab01 ([a9bf189](https://github.com/ArsKF/2026--study--net-admin/commit/a9bf1892ee5b50c24e192f4d989fa93fc2fe2cd4))
+* **lab02:** finish lab02 ([368fff7](https://github.com/ArsKF/2026--study--net-admin/commit/368fff7f0ddda1095d86566392463e857ca97fb2))
