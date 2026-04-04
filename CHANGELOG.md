@@ -1,5 +1,5 @@
-# 1.7.0 (2026-03-26)
+# 1.8.0 (2026-04-04)
 
 ### Features
 
-* **lab07:** finish lab07 ([1a1f697](https://github.com/ArsKF/2026--study--net-admin/commit/1a1f697452bf523ed7282dfceeee39c71788956d))
+* **lab08:** finish lab08 ([611ebf9](https://github.com/ArsKF/2026--study--net-admin/commit/611ebf946b4de17d8b9d8b512d512dd757d86e99))
