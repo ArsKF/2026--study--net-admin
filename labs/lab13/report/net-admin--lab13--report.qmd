@@ -1,10 +1,8 @@
 ---
 ## Author
 author:
-  name: Дмитрий Сергеевич Кулябов
-  degrees: DSc
-  orcid: 0000-0002-0877-7063
-  email: kulyabov-ds@rudn.ru
+  name: Арсений Валерьевич Агаев
+  email: 1032221668@rudn.ru
   affiliation:
     - name: Российский университет дружбы народов
       country: Российская Федерация
@@ -13,55 +11,227 @@ author:
       address: ул. Миклухо-Маклая, д. 6
 
 ## Title
-title: "Шаблон отчёта по лабораторной работе"
-subtitle: "Простейший вариант"
+title: "Лабораторная работа №13"
+subtitle: "Статическая маршрутизация в Интернете. Планирование"
 license: "CC BY"
 ---
 
 # Цель работы
 
-Здесь приводится формулировка цели лабораторной работы.
-Формулировки цели для каждой лабораторной работы приведены в методических указаниях.
-
-Цель данного шаблона --- максимально упростить подготовку отчётов по лабораторным работам.
-Модифицируя данный шаблон, студенты смогут без труда подготовить отчёт по лабораторным работам, а также познакомиться с основными возможностями разметки Markdown.
+Провести подготовительные мероприятия по организации взаимодействия через сеть 
+провайдера посредством статической маршрутизации локальной сети с сетью основного 
+здания, расположенного в 42-м квартале в Москве, и сетью филиала, расположенного 
+в г. Сочи.
 
 # Задание
 
-Здесь приводится описание задания в соответствии с рекомендациями методического пособия и выданным вариантом.
+- Внести изменения в схемы L1, L2 и L3 сети, добавив в них информацию о сети основной 
+территории (42-й квартал в Москве) и сети филиала в г. Сочи.
 
-# Теоретическое введение
+- Дополнить схему проекта, добавив подсеть основной территории организации 42-го квартала 
+в Москве и подсеть филиала в г. Сочи.
 
-Здесь описываются теоретические аспекты, связанные с выполнением работы.
-
-Например, в [табл. @tbl-std-dir] приведено краткое описание стандартных каталогов Unix.
-
-| Имя каталога | Описание каталога                                                                                                          |
-|--------------|----------------------------------------------------------------------------------------------------------------------------|
-| `/`          | Корневая директория, содержащая всю файловую                                                                               |
-| `/bin `      | Основные системные утилиты, необходимые как в однопользовательском режиме, так и при обычной работе всем пользователям     |
-| `/etc`       | Общесистемные конфигурационные файлы и файлы конфигурации установленных программ                                           |
-| `/home`      | Содержит домашние директории пользователей, которые, в свою очередь, содержат персональные настройки и данные пользователя |
-| `/media`     | Точки монтирования для сменных носителей                                                                                   |
-| `/root`      | Домашняя директория пользователя  `root`                                                                                   |
-| `/tmp`       | Временные файлы                                                                                                            |
-| `/usr`       | Вторичная иерархия для данных пользователя                                                                                 |
-
-: Описание некоторых каталогов файловой системы GNU Linux {#tbl-std-dir}
-
-Более подробно про Unix см. в [@tanenbaum_book_modern-os_ru; @robbins_book_bash_en; @zarrelli_book_mastering-bash_en; @newham_book_learning-bash_en].
+- Сделать первоначальную настройку добавленного в проект оборудования.
 
 # Выполнение лабораторной работы
 
-Описываются проведённые действия, в качестве иллюстрации даётся ссылка на иллюстрацию ([рис. @fig-001]).
+## Модификация схемы логической области
 
-![V Сольвеевский конгресс (1927) «Электроны и фотоны»](image/solvay.jpg){#fig-001 width=70%}
+В логической рабочей области разместил 4 медиаконвертера (Repeater-PT), 
+2 маршрутизатора типа Cisco 2811, 1 маршрутизирующий коммутатор типа Cisco 3560-24PS, 
+2 коммутатора типа Cisco 2950-24, 1 коммутатор Cisco 2950-24T, 3 оконечных устройства типа PC-PT.
+
+![Схема логической рабочей области](image/1.png){#fig-001 width=70%}
+
+На медиаконвертерах заменил имеющиеся модули на PT-REPEATER-NM-1FFE и PT-REPEATER-NM-1CFE.
+
+![Модули медиаконвертеров](image/2.png){#fig-002 width=70%}
+
+На маршрутизаторе ```msk-q42-avagaev-gw-1``` добавил дополнительный интерфейс NM-2FE2W.
+
+![Дополнительный интерфейс маршрутизатора](image/3.png){#fig-003 width=70%}
+
+## Модификация схемы физической области
+
+В физической рабочей области добавил в г. Москва здание 42-квартала и добавил город Сочи 
+и здание филиала в нем ([рис. @fig-004] и [рис. @fig-005]).
+
+![Здание 42-квартала](image/4.png){#fig-004 width=70%}
+
+![Город Сочи](image/5.png){#fig-005 width=70%}
+
+После перенес все оборудования из "Донская" в соответствующие здания ([рис. @fig-006]).
+
+![Перенос оборудования](image/6.png){#fig-006 width=70%}
+
+## Первоначальная настройка оборудования
+
+После провел первоначальную настройку оборудования:
+
+### msk-q42-avagaev-gw-1:
+```
+enable
+configure terminal
+
+hostname msk-q42-avagaev-gw-1
+
+line vty 0 4
+password cisco
+login
+exit
+
+line console 0
+password cisco
+login
+exit
+
+enable secret cisco
+service password-encryption
+username admin privilege 1 secret cisco
+
+ip domain-name q42.rudn.edu
+crypto key generate rsa
+line vty 0 4
+transport input ssh
+```
+
+### msk-q42-avagaev-sw-1:
+```
+enable
+configure terminal
+
+hostname msk-q42-avagaev-sw-1
+
+line vty 0 4
+password cisco
+login
+exit
+
+line console 0
+password cisco
+login
+exit
+
+enable secret cisco
+service password-encryption
+username admin privilege 1 secret cisco
+
+ip domain-name q42.rudn.edu
+crypto key generate rsa
+line vty 0 4
+transport input ssh
+```
+
+### msk-hostel-avagaev-gw-1:
+```
+enable
+configure terminal
+
+hostname msk-hotel-avagaev-gw-1
+
+line vty 0 4
+password cisco
+login
+exit
+
+line console 0
+password cisco
+login
+exit
+
+enable secret cisco
+service password-encryption
+username admin privilege 1 secret cisco
+
+ip ssh version 2
+ip domain-name hostel.rudn.edu
+crypto key generate rsa
+line vty 0 4
+transport input ssh
+```
+
+### msk-hostel-avagaev-sw-1:
+```
+enable
+configure terminal
+
+hostname msk-hostel-avagaev-sw-1
+
+line vty 0 4
+password cisco
+login
+exit
+
+line console 0
+password cisco
+login
+exit
+
+enable secret cisco
+service password-encryption
+username admin privilege 1 secret cisco
+
+ip domain-name hostel.rudn.edu
+crypto key generate rsa
+line vty 0 4
+transport input ssh
+```
+
+### sch-sochi-avagaev-sw-1:
+```
+enable
+configure terminal
+
+hostname sch-sochi-avagaev-sw-1
+
+line vty 0 4
+password cisco
+login
+exit
+
+line console 0
+password cisco
+login
+exit
+
+enable secret cisco
+service password-encryption
+username admin privilege 1 secret cisco
+
+ip domain-name sochi.rudn.edu
+crypto key generate rsa
+line vty 0 4
+transport input ssh
+```
+
+### sch-sochi-avagaev-gw-1:
+```
+enable
+configure terminal
+
+hostname sch-sochi-avagaev-gw-1
+
+line vty 0 4
+password cisco
+login
+exit
+
+line console 0
+password cisco
+login
+exit
+
+enable secret cisco
+service password-encryption
+username admin privilege 1 secret cisco
+
+ip domain-name sochi.rudn.edu
+crypto key generate rsa
+line vty 0 4
+transport input ssh
+```
 
 # Выводы
 
-Здесь кратко описываются итоги проделанной работы.
+Я провел подготовительные мероприятия по организации взаимодействия через сеть провайдера.
 
-# Список литературы{.unnumbered}
-
-::: {#refs}
-:::
