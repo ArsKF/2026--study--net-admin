@@ -1,10 +1,8 @@
 ---
 ## Author
 author:
-  name: Дмитрий Сергеевич Кулябов
-  degrees: DSc
-  orcid: 0000-0002-0877-7063
-  email: kulyabov-ds@rudn.ru
+  name: Арсений Валерьевич Агаев
+  email: 1032221668@rudn.ru
   affiliation:
     - name: Российский университет дружбы народов
       country: Российская Федерация
@@ -13,55 +11,408 @@ author:
       address: ул. Миклухо-Маклая, д. 6
 
 ## Title
-title: "Шаблон отчёта по лабораторной работе"
-subtitle: "Простейший вариант"
+title: "Лабораторная работа №14"
+subtitle: "Статическая маршрутизация в Интернете. Настройка"
 license: "CC BY"
 ---
 
 # Цель работы
 
-Здесь приводится формулировка цели лабораторной работы.
-Формулировки цели для каждой лабораторной работы приведены в методических указаниях.
-
-Цель данного шаблона --- максимально упростить подготовку отчётов по лабораторным работам.
-Модифицируя данный шаблон, студенты смогут без труда подготовить отчёт по лабораторным работам, а также познакомиться с основными возможностями разметки Markdown.
+Настроить взаимодействие через сеть провайдера посредством статической маршрутизации 
+локальной сети организации с сетью основного здания, расположенного в 42-м квартале 
+в Москве, и сетью филиала, расположенного в г. Сочи.
 
 # Задание
 
-Здесь приводится описание задания в соответствии с рекомендациями методического пособия и выданным вариантом.
+- Настроить связь между территориями.
 
-# Теоретическое введение
+- Настроить оборудование, расположенное в квартале 42 в Москве.
 
-Здесь описываются теоретические аспекты, связанные с выполнением работы.
+- Настроить оборудование, расположенное в филиале в г. Сочи.
 
-Например, в [табл. @tbl-std-dir] приведено краткое описание стандартных каталогов Unix.
+- Настроить статическую маршрутизацию между территориями.
 
-| Имя каталога | Описание каталога                                                                                                          |
-|--------------|----------------------------------------------------------------------------------------------------------------------------|
-| `/`          | Корневая директория, содержащая всю файловую                                                                               |
-| `/bin `      | Основные системные утилиты, необходимые как в однопользовательском режиме, так и при обычной работе всем пользователям     |
-| `/etc`       | Общесистемные конфигурационные файлы и файлы конфигурации установленных программ                                           |
-| `/home`      | Содержит домашние директории пользователей, которые, в свою очередь, содержат персональные настройки и данные пользователя |
-| `/media`     | Точки монтирования для сменных носителей                                                                                   |
-| `/root`      | Домашняя директория пользователя  `root`                                                                                   |
-| `/tmp`       | Временные файлы                                                                                                            |
-| `/usr`       | Вторичная иерархия для данных пользователя                                                                                 |
+- Настроить статическую маршрутизацию на территории квартала 42 в г. Москве
 
-: Описание некоторых каталогов файловой системы GNU Linux {#tbl-std-dir}
-
-Более подробно про Unix см. в [@tanenbaum_book_modern-os_ru; @robbins_book_bash_en; @zarrelli_book_mastering-bash_en; @newham_book_learning-bash_en].
+- Настроить NAT на маршрутизаторе msk-donskaya-avagaev-gw-1.
 
 # Выполнение лабораторной работы
 
-Описываются проведённые действия, в качестве иллюстрации даётся ссылка на иллюстрацию ([рис. @fig-001]).
+## Настройка соединения между площадками
 
-![V Сольвеевский конгресс (1927) «Электроны и фотоны»](image/solvay.jpg){#fig-001 width=70%}
+### Коммутатор provider-avagaev-sw-1
+
+```
+enable
+configure terminal
+
+interface f0/3
+switchport mode trunk
+exit
+
+interface f0/4
+switchport mode trunk
+exit
+
+vlan 5
+name q42
+exit
+
+interface vlan5
+no shutdown
+exit
+
+vlan 6
+name sochi
+exit
+
+interface vlan6
+no shutdown
+exit
+```
+
+![Настройка соединения между площадками. Коммутатор provider-avagaev-sw-1](image/1.png){#fig-001 width=70%}
+
+### Маршрутизатор msk-donskaya-avagaev-gw-1
+
+```
+enable
+configure terminal
+
+interface f0/1.5
+encapsulation dot1Q 5
+ip address 10.128.255.1 255.255.255.252
+description q42
+exit
+
+interface f0/1.6
+encapsulation dot1Q 6
+ip address 10.128.255.5 255.255.255.252
+description sochi
+exit
+```
+
+![Настройка соединения между площадками. Маршрутизатор msk-donskaya-avagaev-gw-1](image/2.png){#fig-002 width=70%}
+
+### Маршрутизатор msk-q42-avagaev-gw-1
+
+```
+enable
+configure terminal
+
+interface f0/1
+no shutdown
+exit
+
+interface f0/1.5
+encapsulation dot1Q 5
+ip address 10.128.255.2 255.255.255.252
+description donskaya
+exit
+```
+
+![Настройка соединения между площадками. Маршрутизатор msk-q42-avagaev-gw-1](image/3.png){#fig-003 width=70%}
+
+### Коммутатор sch-sochi-avagaev-sw-1
+
+```
+enable
+configure terminal
+
+interface f0/23
+switchport mode trunk
+exit
+
+interface f0/24
+switchport mode trunk
+exit
+
+vlan 6
+name sochi
+exit
+
+interface vlan6
+no shutdown
+exit
+```
+
+![Настройка соединения между площадками. Коммутатор sch-sochi-avagaev-sw-1](image/4.png){#fig-004 width=70%}
+
+### Маршрутизатор sch-sochi-avagaev-gw-1
+
+```
+enable
+configure terminal
+
+interface f0/0
+no shutdown
+exit
+
+interface f0/0.6
+encapsulation dot1Q 6
+ip address 10.128.255.6 255.255.255.252
+description donskaya
+exit
+```
+
+![Настройка соединения между площадками. Маршрутизатор sch-sochi-avagaev-gw-1](image/5.png){#fig-005 width=70%}
+
+## Настройка площадки 42-го квартала
+
+### Маршрутизатор msk-q42-avagaev-gw-1
+
+```
+enable
+configure terminal
+
+interface f0/0
+no shutdown
+exit
+
+interface f0/0.201
+encapsulation dot1Q 201
+ip address 10.129.0.1 255.255.255.0
+description q42-main
+exit
+
+interface f1/0
+no shutdown
+exit
+
+interface f1/0.202
+encapsulation dot1Q 202
+ip address 10.129.1.1 255.255.255.0
+description q42-management
+exit
+```
+
+![Настройка площадки 42-го квартала. Маршрутизатор msk-q42-avagaev-gw-1](image/6.png){#fig-006 width=70%}
+
+### Коммутатор msk-q42-avagaev-sw-1
+
+```
+enable
+configure terminal
+
+interface f0/24
+switchport mode trunk
+exit
+
+interface f0/1
+switchport mode access
+switchport access vlan 201
+exit
+
+vlan 201
+name q42-main
+exit
+
+interface vlan201
+no shutdown
+exit
+```
+
+![Настройка площадки 42-го квартала. Коммутатор msk-q42-avagaev-sw-1](image/7.png){#fig-007 width=70%}
+
+### Маршрутизирующий коммутатор msk-hostel-avagaev-gw-1
+
+```
+enable
+configure terminal
+
+interface g0/1
+switchport trunk encapsulation dot1q
+switchport mode trunk
+exit
+
+interface f0/1
+switchport trunk encapsulation dot1q
+switchport mode trunk
+exit
+
+vlan 202
+name q42-management
+exit
+
+interface vlan202
+no shutdown
+ip address 10.129.1.2 255.255.255.0
+exit
+
+vlan 301
+name hostel-main
+exit
+
+interface vlan301
+no shutdown ip address 10.129.128.1 255.255.255.0
+exit
+```
+
+![Настройка площадки 42-го квартала. Маршрутизирующий коммутатор msk-hostel-avagaev-gw-1](image/8.png){#fig-008 width=70%}
+
+### Коммутатор msk-hostel-avagaev-sw-1
+
+```
+enable
+configure terminal
+
+interface g0/1
+switchport mode trunk
+exit
+
+interface f0/1
+switchport mode trunk
+exit
+
+interface f0/1
+switchport mode access
+switchport access vlan 301
+exit
+
+vlan 301
+name hostel-main
+exit
+
+interface vlan301
+no shutdown
+exit
+```
+
+![Настройка площадки 42-го квартала. Коммутатор msk-hostel-avagaev-sw-1](image/9.png){#fig-009 width=70%}
+
+## Настройка площадки в Сочи
+
+### Маршрутизатор sch-sochi-avagaev-gw-1
+
+```
+enable
+configure terminal
+
+interface f0/0.401
+encapsulation dot1Q 401
+ip address 10.130.0.1 255.255.255.0
+description sochi-main
+exit
+
+interface f0/0.402
+encapsulation dot1Q 402
+ip address 10.130.1.1 255.255.255.0
+description sochi-management
+exit
+```
+
+![Настройка площадки в Сочи. Маршрутизатор sch-sochi-avagaev-gw-1](image/10.png){#fig-010 width=70%}
+
+### Коммутатор sch-sochi-avagaev-sw-1
+
+```
+enable
+configure terminal
+
+interface f0/1
+switchport mode access
+switchport access vlan 401
+exit 
+
+vlan 401
+name sochi-main
+exit
+
+interface vlan401
+no shutdown
+exit
+```
+
+![Настройка площадки в Сочи. Коммутатор sch-sochi-avagaev-sw-1](image/11.png){#fig-011 width=70%}
+
+## Настройка маршрутизации между площадками
+
+### Маршрутизатор msk-donskaya-avagaev-gw-1
+
+```
+enable
+configure terminal
+
+ip route 10.129.0.0 255.255.0.0 10.128.255.2
+ip route 10.130.0.0 255.255.0.0 10.128.255.6
+```
+
+![Настройка маршрутизации между площадками. Маршрутизатор msk-donskaya-avagaev-gw-1](image/12.png){#fig-012 width=70%}
+
+### Маршрутизатор msk-q42-avagaev-gw-1
+
+```
+enable
+configure terminal
+
+ip route 0.0.0.0 0.0.0.0 10.128.255.1
+```
+
+![Настройка маршрутизации между площадками. Маршрутизатор msk-q42-avagaev-gw-1](image/13.png){#fig-013 width=70%}
+
+### Маршрутизатор sch-sochi-avagaev-gw-1
+
+```
+enable
+configure terminal
+
+ip route 0.0.0.0 0.0.0.0 10.128.255.5
+```
+
+![Настройка маршрутизации между площадками. Маршрутизатор sch-sochi-avagaev-gw-1](image/14.png){#fig-014 width=70%}
+
+## Настройка маршрутизации на 42 квартале
+
+### Маршрутизатор msk-q42-avagaev-gw-1
+
+```
+enable
+configure terminal
+
+ip route 10.129.128.0 255.255.128.0 10.129.1.2
+```
+
+![Настройка маршрутизации на 42 квартале. Маршрутизатор msk-q42-avagaev-gw-1](image/15.png){#fig-015 width=70%}
+
+### Маршрутизирующий коммутатор msk-hostel-avagaev-gw-1
+
+```
+enable
+configure terminal
+
+ip routing
+
+ip route 0.0.0.0 0.0.0.0 10.129.1.1
+```
+
+![Настройка маршрутизации на 42 квартале. Маршрутизирующий коммутатор msk-hostel-avagaev-gw-1](image/16.png){#fig-016 width=70%}
+
+## Настрока NAT на маршрутизаторе msk-donskaya-avagaev-gw-1
+
+```
+enable
+configure terminal
+
+interface f0/1.5
+ip nat inside
+exit
+
+interface f0/1.6
+ip nat inside
+exit
+
+ip access-list- extended nat-inet
+remark q42
+permit ip host 10.129.0.200 any
+permit ip host 10.129.128.200 any
+remark sochi
+permit ip host 10.130.0.200 any
+exit
+```
+
+![Настрока NAT на маршрутизаторе msk-donskaya-avagaev-gw-1](image/17.png){#fig-017 width=70%}
 
 # Выводы
 
-Здесь кратко описываются итоги проделанной работы.
-
-# Список литературы{.unnumbered}
-
-::: {#refs}
-:::
+Я настроил взаимодействие через сеть провайдера посредством статической 
+маршрутизации локальной сети.

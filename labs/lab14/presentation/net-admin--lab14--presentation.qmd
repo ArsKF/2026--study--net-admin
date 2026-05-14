@@ -1,24 +1,22 @@
 ---
 ## Author
 author:
-  name: Дмитрий Сергеевич Кулябов
-  degrees: DSc
-  orcid: 0000-0002-0877-7063
-  email: kulyabov-ds@rudn.ru
+  name: Арсений Валерьевич Агаев
+  email: 1032221668@rudn.ru
   affiliation:
     - name: Российский университет дружбы народов
       country: Российская Федерация
       postal-code: 117198
       city: Москва
       address: ул. Миклухо-Маклая, д. 6
+
 ## Title
-title: Структура научной презентации
-subtitle: Простейший вариант
+title: Лабораторная работа №14
+subtitle:  Статическая маршрутизация в Интернете. Настройка
 license: CC BY
 date: today
 date-format: "YYYY-MM-DD" # Example: 2025-09-06
 ---
-
 # Информация
 
 ## Докладчик
@@ -26,175 +24,406 @@ date-format: "YYYY-MM-DD" # Example: 2025-09-06
 :::::::::::::: {.columns align=center}
 ::: {.column width="70%"}
 
-  * Кулябов Дмитрий Сергеевич
-  * д.ф.-м.н., профессор
-  * профессор кафедры теории вероятностей и кибербезопасности
+  * Арсений Валерьевич Агаев
+  * студент
   * Российский университет дружбы народов им. П. Лумумбы
-  * [kulyabov-ds@rudn.ru](mailto:kulyabov-ds@rudn.ru)
-  * <https://yamadharma.github.io/ru/>
+  * [1032221668@rudn.ru](mailto:1032221668@rudn.ru)
 
 :::
 ::: {.column width="30%"}
 
-![](./image/kulyabov.jpg)
-
 :::
 ::::::::::::::
 
-# Вводная часть
+# Цели и задачи
 
-## Актуальность
+## Цель работы
 
-- Важно донести результаты своих исследований до окружающих
-- Научная презентация --- рабочий инструмент исследователя
-- Необходимо создавать презентацию быстро
-- Желательна минимизация усилий для создания презентации
+Настроить взаимодействие через сеть провайдера посредством статической маршрутизации 
+локальной сети организации с сетью основного здания, расположенного в 42-м квартале 
+в Москве, и сетью филиала, расположенного в г. Сочи.
 
-## Объект и предмет исследования
+## Задачи
 
-- Презентация как текст
-- Программное обеспечение для создания презентаций
-- Входные и выходные форматы презентаций
+- Настроить связь между территориями.
 
-## Цели и задачи
+- Настроить оборудование, расположенное в квартале 42 в Москве.
 
-- Создать шаблон презентации в Markdown
-- Описать алгоритм создания выходных форматов презентаций
+- Настроить оборудование, расположенное в филиале в г. Сочи.
 
-## Материалы и методы
+- Настроить статическую маршрутизацию между территориями.
 
-- Процессор `pandoc` для входного формата Markdown
-- Результирующие форматы
-	- `pdf`
-	- `html`
-- Автоматизация процесса создания: `Makefile`
+- Настроить статическую маршрутизацию на территории квартала 42 в г. Москве
 
-# Создание презентации
+- Настроить NAT на маршрутизаторе msk-donskaya-avagaev-gw-1.
 
-## Процессор `pandoc`
+# Содержание исследования
 
-- Pandoc: преобразователь текстовых файлов
-- Сайт: <https://pandoc.org/>
-- Репозиторий: <https://github.com/jgm/pandoc>
+## Настройка соединения между площадками
 
-## Формат `pdf`
+Коммутатор provider-avagaev-sw-1:
 
-- Использование LaTeX
-- Пакет для презентации: [beamer](https://ctan.org/pkg/beamer)
-- Тема оформления: `metropolis`
+```
+enable
+configure terminal
 
-## Код для формата `pdf`
+interface f0/3
+switchport mode trunk
+exit
 
-```yaml
-slide_level: 2
-aspectratio: 169
-section-titles: true
-theme: metropolis
+interface f0/4
+switchport mode trunk
+exit
+
+vlan 5
+name q42
+exit
+
+interface vlan5
+no shutdown
+exit
+
+vlan 6
+name sochi
+exit
+
+interface vlan6
+no shutdown
+exit
 ```
 
-## Формат `html`
+## Настройка соединения между площадками
 
-- Используется фреймворк [reveal.js](https://revealjs.com/)
-- Используется [тема](https://revealjs.com/themes/) `beige`
+Маршрутизатор msk-donskaya-avagaev-gw-1:
 
-## Код для формата `html`
-
-- Тема задаётся в файле `Makefile`
-
-```make
-REVEALJS_THEME = beige
 ```
+enable
+configure terminal
+
+interface f0/1.5
+encapsulation dot1Q 5
+ip address 10.128.255.1 255.255.255.252
+description q42
+exit
+
+interface f0/1.6
+encapsulation dot1Q 6
+ip address 10.128.255.5 255.255.255.252
+description sochi
+exit
+```
+
+## Настройка соединения между площадками
+
+Маршрутизатор msk-q42-avagaev-gw-1:
+
+```
+enable
+configure terminal
+
+interface f0/1
+no shutdown
+exit
+
+interface f0/1.5
+encapsulation dot1Q 5
+ip address 10.128.255.2 255.255.255.252
+description donskaya
+exit
+```
+
+## Настройка соединения между площадками
+
+Коммутатор sch-sochi-avagaev-sw-1:
+
+```
+enable
+configure terminal
+
+interface f0/23
+switchport mode trunk
+exit
+
+interface f0/24
+switchport mode trunk
+exit
+
+vlan 6
+name sochi
+exit
+
+interface vlan6
+no shutdown
+exit
+```
+
+## Настройка соединения между площадками
+
+Маршрутизатор sch-sochi-avagaev-gw-1:
+
+```
+enable
+configure terminal
+
+interface f0/0
+no shutdown
+exit
+
+interface f0/0.6
+encapsulation dot1Q 6
+ip address 10.128.255.6 255.255.255.252
+description donskaya
+exit
+```
+
+## Настройка площадки 42-го квартала
+
+Маршрутизатор msk-q42-avagaev-gw-1:
+
+```
+enable
+configure terminal
+
+interface f0/0
+no shutdown
+exit
+
+interface f0/0.201
+encapsulation dot1Q 201
+ip address 10.129.0.1 255.255.255.0
+description q42-main
+exit
+
+interface f1/0
+no shutdown
+exit
+
+interface f1/0.202
+encapsulation dot1Q 202
+ip address 10.129.1.1 255.255.255.0
+description q42-management
+exit
+```
+
+## Настройка площадки 42-го квартала
+
+Коммутатор msk-q42-avagaev-sw-1:
+
+```
+enable
+configure terminal
+
+interface f0/24
+switchport mode trunk
+exit
+
+interface f0/1
+switchport mode access
+switchport access vlan 201
+exit
+
+vlan 201
+name q42-main
+exit
+
+interface vlan201
+no shutdown
+exit
+```
+
+## Настройка площадки 42-го квартала
+
+Маршрутизирующий коммутатор msk-hostel-avagaev-gw-1:
+
+```
+enable
+configure terminal
+
+interface g0/1
+switchport trunk encapsulation dot1q
+switchport mode trunk
+exit
+
+interface f0/1
+switchport trunk encapsulation dot1q
+switchport mode trunk
+exit
+
+vlan 202
+name q42-management
+exit
+
+interface vlan202
+no shutdown
+ip address 10.129.1.2 255.255.255.0
+exit
+
+vlan 301
+name hostel-main
+exit
+
+interface vlan301
+no shutdown ip address 10.129.128.1 255.255.255.0
+exit
+```
+
+## Настройка площадки 42-го квартала
+
+Коммутатор msk-hostel-avagaev-sw-1:
+
+```
+enable
+configure terminal
+
+interface g0/1
+switchport mode trunk
+exit
+
+interface f0/1
+switchport mode trunk
+exit
+
+interface f0/1
+switchport mode access
+switchport access vlan 301
+exit
+
+vlan 301
+name hostel-main
+exit
+
+interface vlan301
+no shutdown
+exit
+```
+
+## Настройка площадки в Сочи
+
+Маршрутизатор sch-sochi-avagaev-gw-1:
+
+```
+enable
+configure terminal
+
+interface f0/0.401
+encapsulation dot1Q 401
+ip address 10.130.0.1 255.255.255.0
+description sochi-main
+exit
+
+interface f0/0.402
+encapsulation dot1Q 402
+ip address 10.130.1.1 255.255.255.0
+description sochi-management
+exit
+```
+
+## Настройка площадки в Сочи
+
+Коммутатор sch-sochi-avagaev-sw-1:
+
+```
+enable
+configure terminal
+
+interface f0/1
+switchport mode access
+switchport access vlan 401
+exit 
+
+vlan 401
+name sochi-main
+exit
+
+interface vlan401
+no shutdown
+exit
+```
+
+## Настройка маршрутизации между площадками
+
+Маршрутизатор msk-donskaya-avagaev-gw-1:
+
+```
+enable
+configure terminal
+
+ip route 10.129.0.0 255.255.0.0 10.128.255.2
+ip route 10.130.0.0 255.255.0.0 10.128.255.6
+```
+
+## Настройка маршрутизации между площадками
+
+Маршрутизатор msk-q42-avagaev-gw-1:
+
+```
+enable
+configure terminal
+
+ip route 0.0.0.0 0.0.0.0 10.128.255.1
+```
+
+## Настройка маршрутизации между площадками
+
+Маршрутизатор sch-sochi-avagaev-gw-1:
+
+```
+enable
+configure terminal
+
+ip route 0.0.0.0 0.0.0.0 10.128.255.5
+```
+
+## Настройка маршрутизации на 42 квартале
+
+Маршрутизатор msk-q42-avagaev-gw-1:
+
+```
+enable
+configure terminal
+
+ip route 10.129.128.0 255.255.128.0 10.129.1.2
+```
+
+## Настройка маршрутизации на 42 квартале
+
+Маршрутизирующий коммутатор msk-hostel-avagaev-gw-1:
+
+```
+enable
+configure terminal
+
+ip routing
+
+ip route 0.0.0.0 0.0.0.0 10.129.1.1
+```
+
+## Настрока NAT на маршрутизаторе msk-donskaya-avagaev-gw-1
+
+Маршрутизатор msk-donskaya-avagaev-gw-1:
+
+```
+enable
+configure terminal
+
+interface f0/1.5
+ip nat inside
+exit
+
+interface f0/1.6
+ip nat inside
+exit
+
+ip access-list- extended nat-inet
+remark q42
+permit ip host 10.129.0.200 any
+permit ip host 10.129.128.200 any
+remark sochi
+permit ip host 10.130.0.200 any
+exit
+```
+
 # Результаты
 
-## Получающиеся форматы
-
-- Полученный `pdf`-файл можно демонстрировать в любой программе просмотра `pdf`
-- Полученный `html`-файл содержит в себе все ресурсы: изображения, css, скрипты
-
-# Элементы презентации
-
-## Актуальность
-
-- Даёт понять, о чём пойдёт речь
-- Следует широко и кратко описать проблему
-- Мотивировать свое исследование
-- Сформулировать цели и задачи
-- Возможна формулировка ожидаемых результатов
-
-## Цели и задачи
-
-- Не формулируйте более 1--2 целей исследования
-
-## Материалы и методы
-
-- Представляйте данные качественно
-- Количественно, только если крайне необходимо
-- Излишние детали не нужны
-
-## Содержание исследования
-
-- Предлагаемое решение задач исследования с обоснованием
-- Основные этапы работы
-
-## Результаты
-
-- Не нужны все результаты
-- Необходимы логические связки между слайдами
-- Необходимо показать понимание материала
-
-
-## Итоговый слайд
-
-- Запоминается последняя фраза. © Штирлиц
-- Главное сообщение, которое вы хотите донести до слушателей
-- Избегайте использовать последний слайд вида *Спасибо за внимание*
-
-# Рекомендую
-
-## Принцип 10/20/30
-
-  - 10 слайдов
-  - 20 минут на доклад
-  - 30 кегль шрифта
-
-## Связь слайдов
-
-::: incremental
-
-- Один слайд --- одна мысль
-- Нельзя ссылаться на объекты, находящиеся на предыдущих слайдах (например, на формулы)
-- Каждый слайд должен иметь заголовок
-
-:::
-
-## Количество сущностей
-
-::: incremental
-
-- Человек может одновременно помнить $7 \pm 2$ элемента
-- При размещении информации на слайде старайтесь чтобы в сумме слайд содержал не более 5 элементов
-- Можно группировать элементы так, чтобы визуально было не более 5 групп
-
-:::
-
-## Общие рекомендации
-
-::: incremental
-
-- На слайд выносится та информация, которая без зрительной опоры воспринимается хуже
-- Слайды должны дополнять или обобщать содержание выступления или его частей, а не дублировать его
-- Информация на слайдах должна быть изложена кратко, чётко и хорошо структурирована
-- Слайд не должен быть перегружен графическими изображениями и текстом
-- Не злоупотребляйте анимацией и переходами
-
-:::
-
-## Представление данных
-
-::: incremental
-
-- Лучше представить в виде схемы
-- Менее оптимально представить в виде рисунка, графика, таблицы
-- Текст используется, если все предыдущие способы отображения информации не подошли
-
-:::
+Я успешно настроил взаимодействие через сеть провайдера посредством статической 
+маршрутизации локальной сети.
